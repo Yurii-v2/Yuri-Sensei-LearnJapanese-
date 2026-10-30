@@ -1,0 +1,922 @@
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yuri Sensei</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;padding:16px;
+ background:#f4efff;color:#453568;
+ font-family:Arial,sans-serif
+}
+header{
+ background:linear-gradient(135deg,#8d70c9,#b49ae8);
+ color:white;padding:22px;border-radius:22px;text-align:center
+}
+header h1{margin:5px;font-size:30px}
+.page{display:none}
+.page.active{display:block}
+.menu{
+ display:grid;grid-template-columns:repeat(2,1fr);
+ gap:12px;margin-top:20px
+}
+.card{
+ background:white;padding:16px;border-radius:17px;
+ text-align:center;box-shadow:0 3px 10px #d9ccef
+}
+button{
+ border:0;border-radius:12px;padding:12px;
+ background:#8d70c9;color:white;font-size:15px;
+ cursor:pointer;margin:3px
+}
+button:active{background:#674a9e}
+button:disabled{opacity:.5}
+.back{margin-top:20px}
+.grid{
+ display:grid;grid-template-columns:repeat(5,1fr);
+ gap:7px;margin-top:15px
+}
+.letter{
+ background:white;color:#674a9e;padding:12px 2px;
+ font-size:22px;border:1px solid #e5daf8
+}
+small{display:block;font-size:11px}
+input,select{
+ width:100%;padding:13px;margin:8px 0;
+ border:1px solid #cbb8ed;border-radius:12px;
+ background:white;color:#453568;font-size:15px
+}
+.word{
+ background:white;padding:13px;margin:9px 0;
+ border-radius:13px;box-shadow:0 2px 6px #e3d9f3
+}
+.word strong{font-size:23px;color:#7654b5}
+.word small{font-size:13px;margin-top:5px}
+.count{text-align:center;color:#7654b5}
+.chat-box{
+ background:white;border-radius:16px;padding:14px;
+ min-height:220px;max-height:350px;
+ overflow-y:auto;margin:15px 0
+}
+.message{
+ padding:11px;border-radius:12px;
+ margin:8px 0;line-height:1.8;
+ overflow-wrap:anywhere;white-space:pre-wrap
+}
+.user-message{background:#eee6ff;margin-left:20px}
+.ai-message{background:#f8f5ff;margin-right:20px}
+.chat-controls{display:flex;gap:7px;align-items:center}
+.chat-controls input{flex:1;min-width:0}
+.note{font-size:12px;color:#806ca5;line-height:1.7}
+.ai-tools{
+ display:grid;grid-template-columns:repeat(2,1fr);
+ gap:8px;margin-top:12px
+}
+.ai-tools button{font-size:13px}
+.panel{
+ background:white;padding:15px;border-radius:16px;
+ margin:12px 0;box-shadow:0 2px 7px #e3d9f3;
+ text-align:center
+}
+.big-kana{
+ font-size:75px;color:#7654b5;
+ margin:20px;text-align:center
+}
+.quiz-options{
+ display:grid;grid-template-columns:repeat(2,1fr);
+ gap:9px;margin-top:15px
+}
+.quiz-options button{
+ background:#eee6ff;color:#453568;
+ font-size:20px;min-height:60px
+}
+.quiz-options button:disabled{opacity:1}
+.correct{background:#d5f1dc!important;color:#245c35!important}
+.wrong{background:#ffe0e5!important;color:#8b263b!important}
+.feedback{
+ background:#f8f5ff;padding:13px;
+ border-radius:12px;margin:12px 0;line-height:1.7
+}
+.progress{
+ height:10px;background:#e9defa;border-radius:10px;
+ overflow:hidden;margin:10px 0
+}
+.progress div{
+ height:100%;background:#8d70c9;width:0%;
+ transition:.3s
+}
+.score{font-size:22px;color:#7654b5}
+.quiz-hidden{display:none}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Yuri Sensei</h1>
+<p>日本語を学ぼう!</p>
+<p>Learn Japanese with Yuri</p>
+</header>
+
+<section id="home" class="page active">
+<h2>Welcome, Student!</h2>
+<p>اختاري ما تريدين تعلمه.</p>
+
+<div class="menu">
+<div class="card">
+<h3>あ Hiragana</h3>
+<button onclick="showPage('hiragana')">Start</button>
+</div>
+
+<div class="card">
+<h3>ア Katakana</h3>
+<button onclick="showPage('katakana')">Start</button>
+</div>
+
+<div class="card">
+<h3>単語 Vocabulary</h3>
+<button onclick="showPage('vocabulary')">Explore</button>
+</div>
+
+<div class="card">
+<h3>AI Sensei</h3>
+<button onclick="showPage('ai')">Chat</button>
+</div>
+
+<div class="card">
+<h3>読 Reading</h3>
+<button onclick="openQuizMenu('read')">Reading Quiz</button>
+</div>
+
+<div class="card">
+<h3>書 Writing</h3>
+<button onclick="openQuizMenu('write')">Writing Quiz</button>
+</div>
+
+<div class="card">
+<h3>🎤 Speaking</h3>
+<button onclick="openQuizMenu('speak')">Speaking Quiz</button>
+</div>
+
+<div class="card">
+<h3>🏆 Practice</h3>
+<button onclick="openQuizMenu('all')">Mixed Quiz</button>
+</div>
+</div>
+
+<div class="panel">
+<h3>今日の言葉</h3>
+<strong id="dailyWord" style="font-size:30px;color:#7654b5"></strong>
+<p id="dailyMeaning"></p>
+<button onclick="speakJapanese(document.getElementById('dailyWord').textContent)">Listen</button>
+</div>
+</section>
+
+<section id="hiragana" class="page">
+<h2>Hiragana - ひらがな</h2>
+<p>اضغطي على الحرف لسماع نطقه.</p>
+<div class="grid" id="letters"></div>
+<button class="back" onclick="showPage('home')">Back</button>
+</section>
+
+<section id="katakana" class="page">
+<h2>Katakana - カタカナ</h2>
+<p>اضغطي على الحرف لسماع نطقه.</p>
+<div class="grid" id="katakanaLetters"></div>
+<button class="back" onclick="showPage('home')">Back</button>
+</section>
+
+<section id="vocabulary" class="page">
+<h2>Japanese Vocabulary</h2>
+<p>ابحثي بالعربية أو اليابانية أو النطق.</p>
+
+<input id="search" placeholder="Search words..." oninput="renderWords()">
+
+<select id="category" onchange="renderWords()">
+<option value="all">All categories</option>
+<option value="greetings">Greetings</option>
+<option value="people">People</option>
+<option value="family">Family</option>
+<option value="numbers">Numbers</option>
+<option value="time">Time</option>
+<option value="food">Food</option>
+<option value="animals">Animals</option>
+<option value="nature">Nature</option>
+<option value="colors">Colors</option>
+<option value="adjectives">Adjectives</option>
+<option value="verbs">Verbs</option>
+<option value="places">Places</option>
+<option value="objects">Objects</option>
+</select>
+
+<p class="count" id="wordCount"></p>
+<div id="wordList"></div>
+<button class="back" onclick="showPage('home')">Back</button>
+</section>
+
+<!-- QUIZ MENU -->
+<section id="quizMenu" class="page">
+<h2>Yuri Quiz Center</h2>
+<p>اختاري مستوى الاختبار.</p>
+
+<div class="panel">
+<h3 id="quizMenuTitle">Reading Quiz</h3>
+<button onclick="startQuiz(1)">Easy</button>
+<button onclick="startQuiz(2)">Medium</button>
+<button onclick="startQuiz(3)">Hard</button>
+</div>
+
+<p class="note">
+Easy: الحروف الأساسية.
+<br>Medium: حروف متنوعة.
+<br>Hard: اختبار من جميع الحروف.
+</p>
+
+<button class="back" onclick="showPage('home')">Back</button>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="page">
+<h2 id="quizTitle">Quiz</h2>
+
+<div class="panel">
+<div id="questionNumber">Question 1</div>
+<div class="progress"><div id="quizProgress"></div></div>
+<div class="score" id="quizScore">0 points</div>
+</div>
+
+<div class="panel">
+<div id="quizPrompt"></div>
+<div class="big-kana" id="quizKana"></div>
+<div id="quizAnswerArea"></div>
+<div id="quizFeedback" class="feedback quiz-hidden"></div>
+</div>
+
+<button id="nextQuestion" class="quiz-hidden" onclick="nextQuestion()">Next</button>
+<button id="finishQuiz" class="quiz-hidden" onclick="finishQuiz()">See Results</button>
+<button class="back" onclick="showPage('home')">Exit Quiz</button>
+</section>
+
+<section id="quizResult" class="page">
+<h2>Quiz Results</h2>
+<div class="panel">
+<div class="score" id="finalScore"></div>
+<p id="finalMessage"></p>
+<p id="finalDetails"></p>
+</div>
+<button onclick="openQuizMenu(currentQuizType)">Try Again</button>
+<button onclick="showPage('home')">Home</button>
+</section>
+
+<!-- AI -->
+<section id="ai" class="page">
+<h2>Yuri Sensei 先生</h2>
+<p>مدرّسك الياباني للتدريب.</p>
+
+<div class="chat-box" id="chatBox">
+<div class="message ai-message">
+こんにちは! أنا Yuri Sensei.
+<br>اسأليني عن الكلمات أو القواعد اليابانية.
+</div>
+</div>
+
+<div class="chat-controls">
+<input id="chatInput" placeholder="اكتبي رسالتك هنا...">
+<button onclick="sendMessage()">Send</button>
+</div>
+
+<div class="ai-tools">
+<button onclick="quickAsk('علمني التحيات اليابانية')">Greetings</button>
+<button onclick="quickAsk('اشرح الهيراغانا')">Hiragana Help</button>
+<button onclick="quickAsk('كيف أقول شكرًا باليابانية؟')">Translation</button>
+<button onclick="quickAsk('اشرح قواعد الجملة')">Grammar</button>
+<button onclick="quickAsk('اختبرني')">Quiz</button>
+<button onclick="quickAsk('تحدث معي باليابانية')">Conversation</button>
+</div>
+
+<p class="note">
+هذا مساعد تعليمي محلي يعمل دون إنترنت، وليس نموذج AI توليديًا حقيقيًا.
+</p>
+<button class="back" onclick="showPage('home')">Back</button>
+</section>
+
+<script>
+function showPage(id){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+}
+
+const kana=[
+['あ','a'],['い','i'],['う','u'],['え','e'],['お','o'],
+['か','ka'],['き','ki'],['く','ku'],['け','ke'],['こ','ko'],
+['さ','sa'],['し','shi'],['す','su'],['せ','se'],['そ','so'],
+['た','ta'],['ち','chi'],['つ','tsu'],['て','te'],['と','to'],
+['な','na'],['に','ni'],['ぬ','nu'],['ね','ne'],['の','no'],
+['は','ha'],['ひ','hi'],['ふ','fu'],['へ','he'],['ほ','ho'],
+['ま','ma'],['み','mi'],['む','mu'],['め','me'],['も','mo'],
+['や','ya'],['ゆ','yu'],['よ','yo'],
+['ら','ra'],['り','ri'],['る','ru'],['れ','re'],['ろ','ro'],
+['わ','wa'],['を','wo'],['ん','n']
+];
+
+const katakana=[
+['ア','a'],['イ','i'],['ウ','u'],['エ','e'],['オ','o'],
+['カ','ka'],['キ','ki'],['ク','ku'],['ケ','ke'],['コ','ko'],
+['サ','sa'],['シ','shi'],['ス','su'],['セ','se'],['ソ','so'],
+['タ','ta'],['チ','chi'],['ツ','tsu'],['テ','te'],['ト','to'],
+['ナ','na'],['ニ','ni'],['ヌ','nu'],['ネ','ne'],['ノ','no'],
+['ハ','ha'],['ヒ','hi'],['フ','fu'],['ヘ','he'],['ホ','ho'],
+['マ','ma'],['ミ','mi'],['ム','mu'],['メ','me'],['モ','mo'],
+['ヤ','ya'],['ユ','yu'],['ヨ','yo'],
+['ラ','ra'],['リ','ri'],['ル','ru'],['レ','re'],['ロ','ro'],
+['ワ','wa'],['ヲ','wo'],['ン','n']
+];
+
+function speakJapanese(text){
+ if(!('speechSynthesis' in window)){
+  alert('المتصفح لا يدعم الصوت.');
+  return;
+ }
+ speechSynthesis.cancel();
+ const voice=new SpeechSynthesisUtterance(text);
+ voice.lang='ja-JP';
+ voice.rate=.8;
+ speechSynthesis.speak(voice);
+}
+
+function createLetters(data,id){
+ const grid=document.getElementById(id);
+ data.forEach(([letter,sound])=>{
+  const btn=document.createElement('button');
+  btn.className='letter';
+  btn.innerHTML=letter+'<small>'+sound+'</small>';
+  btn.onclick=()=>speakJapanese(letter);
+  grid.appendChild(btn);
+ });
+}
+createLetters(kana,'letters');
+createLetters(katakana,'katakanaLetters');
+
+/* VOCABULARY */
+
+const rawWords=`
+こんにちは|konnichiwa|مرحبًا|greetings
+おはよう|ohayou|صباح الخير|greetings
+こんばんは|konbanwa|مساء الخير|greetings
+さようなら|sayounara|إلى اللقاء|greetings
+ありがとう|arigatou|شكرًا|greetings
+すみません|sumimasen|عذرًا|greetings
+ごめんなさい|gomennasai|أنا آسف|greetings
+はい|hai|نعم|greetings
+いいえ|iie|لا|greetings
+お願いします|onegaishimasu|من فضلك|greetings
+人|hito|إنسان|people
+男|otoko|رجل|people
+女|onna|امرأة|people
+子供|kodomo|طفل|people
+友達|tomodachi|صديق|people
+先生|sensei|معلّم|people
+学生|gakusei|طالب|people
+医者|isha|طبيب|people
+名前|namae|اسم|people
+私|watashi|أنا|people
+家族|kazoku|عائلة|family
+父|chichi|أبي|family
+母|haha|أمي|family
+兄|ani|أخي الأكبر|family
+姉|ane|أختي الكبرى|family
+弟|otouto|أخي الأصغر|family
+妹|imouto|أختي الصغرى|family
+祖父|sofu|جد|family
+祖母|sobo|جدة|family
+家|ie|بيت|family
+一|ichi|واحد|numbers
+二|ni|اثنان|numbers
+三|san|ثلاثة|numbers
+四|yon|أربعة|numbers
+五|go|خمسة|numbers
+六|roku|ستة|numbers
+七|nana|سبعة|numbers
+八|hachi|ثمانية|numbers
+九|kyuu|تسعة|numbers
+十|juu|عشرة|numbers
+今日|kyou|اليوم|time
+明日|ashita|غدًا|time
+昨日|kinou|أمس|time
+朝|asa|الصباح|time
+昼|hiru|الظهيرة|time
+夜|yoru|الليل|time
+今|ima|الآن|time
+時間|jikan|وقت|time
+毎日|mainichi|كل يوم|time
+週|shuu|أسبوع|time
+水|mizu|ماء|food
+お茶|ocha|شاي|food
+牛乳|gyuunyuu|حليب|food
+コーヒー|koohii|قهوة|food
+ご飯|gohan|أرز مطبوخ أو وجبة|food
+パン|pan|خبز|food
+肉|niku|لحم|food
+魚|sakana|سمك|food
+卵|tamago|بيض|food
+野菜|yasai|خضروات|food
+果物|kudamono|فاكهة|food
+りんご|ringo|تفاح|food
+バナナ|banana|موز|food
+みかん|mikan|يوسفي|food
+いちご|ichigo|فراولة|food
+ぶどう|budou|عنب|food
+ケーキ|keeki|كعكة|food
+アイスクリーム|aisukuriimu|آيس كريم|food
+砂糖|satou|سكر|food
+塩|shio|ملح|food
+犬|inu|كلب|animals
+猫|neko|قطة|animals
+鳥|tori|طائر|animals
+馬|uma|حصان|animals
+牛|ushi|بقرة|animals
+豚|buta|خنزير|animals
+羊|hitsuji|خروف|animals
+兎|usagi|أرنب|animals
+鼠|nezumi|فأر|animals
+熊|kuma|دب|animals
+虎|tora|نمر|animals
+ライオン|raion|أسد|animals
+象|zou|فيل|animals
+猿|saru|قرد|animals
+狐|kitsune|ثعلب|animals
+狼|ookami|ذئب|animals
+亀|kame|سلحفاة|animals
+蛇|hebi|ثعبان|animals
+蝶|chou|فراشة|animals
+山|yama|جبل|nature
+川|kawa|نهر|nature
+海|umi|بحر|nature
+空|sora|سماء|nature
+太陽|taiyou|شمس|nature
+月|tsuki|قمر|nature
+星|hoshi|نجمة|nature
+雨|ame|مطر|nature
+雪|yuki|ثلج|nature
+風|kaze|رياح|nature
+雲|kumo|سحابة|nature
+花|hana|زهرة|nature
+木|ki|شجرة|nature
+森|mori|غابة|nature
+草|kusa|عشب|nature
+石|ishi|حجر|nature
+火|hi|نار|nature
+土|tsuchi|تراب|nature
+池|ike|بركة ماء|nature
+海岸|kaigan|ساحل|nature
+赤|aka|أحمر|colors
+青|ao|أزرق|colors
+白|shiro|أبيض|colors
+黒|kuro|أسود|colors
+黄色|kiiro|أصفر|colors
+緑|midori|أخضر|colors
+紫|murasaki|بنفسجي|colors
+ピンク|pinku|وردي|colors
+茶色|chairo|بني|colors
+灰色|haiiro|رمادي|colors
+大きい|ookii|كبير|adjectives
+小さい|chiisai|صغير|adjectives
+新しい|atarashii|جديد|adjectives
+古い|furui|قديم|adjectives
+高い|takai|مرتفع أو غالٍ|adjectives
+安い|yasui|رخيص|adjectives
+暑い|atsui|حار (الطقس)|adjectives
+寒い|samui|بارد (الطقس)|adjectives
+熱い|atsui|ساخن|adjectives
+冷たい|tsumetai|بارد (اللمس)|adjectives
+食べる|taberu|يأكل|verbs
+飲む|nomu|يشرب|verbs
+見る|miru|يرى أو يشاهد|verbs
+聞く|kiku|يسمع أو يستمع|verbs
+読む|yomu|يقرأ|verbs
+書く|kaku|يكتب|verbs
+話す|hanasu|يتحدث|verbs
+行く|iku|يذهب|verbs
+来る|kuru|يأتي|verbs
+帰る|kaeru|يعود|verbs
+学校|gakkou|مدرسة|places
+病院|byouin|مستشفى|places
+駅|eki|محطة|places
+店|mise|متجر|places
+公園|kouen|حديقة عامة|places
+図書館|toshokan|مكتبة|places
+銀行|ginkou|بنك|places
+郵便局|yuubinkyoku|مكتب بريد|places
+会社|kaisha|شركة|places
+空港|kuukou|مطار|places
+本|hon|كتاب|objects
+ペン|pen|قلم|objects
+鉛筆|enpitsu|قلم رصاص|objects
+机|tsukue|مكتب|objects
+椅子|isu|كرسي|objects
+時計|tokei|ساعة|objects
+電話|denwa|هاتف|objects
+車|kuruma|سيارة|objects
+自転車|jitensha|دراجة|objects
+鍵|kagi|مفتاح|objects
+`;
+
+const words=rawWords.trim().split('\n').map(line=>line.split('|'));
+
+function renderWords(){
+ const search=document.getElementById('search').value.trim().toLowerCase();
+ const category=document.getElementById('category').value;
+ const list=document.getElementById('wordList');
+ list.innerHTML='';
+
+ const filtered=words.filter(w=>
+  w.join(' ').toLowerCase().includes(search)&&
+  (category==='all'||w[3]===category)
+ );
+
+ document.getElementById('wordCount').textContent=filtered.length+' words found';
+
+ filtered.forEach(w=>{
+  const item=document.createElement('div');
+  item.className='word';
+  const jp=document.createElement('strong');
+  jp.textContent=w[0];
+  const romaji=document.createElement('small');
+  romaji.textContent=w[1];
+  const meaning=document.createElement('p');
+  meaning.textContent=w[2];
+  const btn=document.createElement('button');
+  btn.textContent='Listen';
+  btn.onclick=()=>speakJapanese(w[0]);
+  item.append(jp,romaji,meaning,btn);
+  list.appendChild(item);
+ });
+}
+renderWords();
+
+const daily=words[Math.floor(Math.random()*words.length)];
+document.getElementById('dailyWord').textContent=daily[0];
+document.getElementById('dailyMeaning').textContent=daily[1]+' — '+daily[2];
+
+/* QUIZ SYSTEM */
+
+let currentQuizType='read';
+let quizQuestions=[];
+let questionIndex=0;
+let quizPoints=0;
+let quizLevel=1;
+let quizAnswered=false;
+let recognition=null;
+let micActive=false;
+
+function openQuizMenu(type){
+ currentQuizType=type;
+ const names={
+  read:'Reading Quiz',
+  write:'Writing Quiz',
+  speak:'Speaking Quiz',
+  all:'Mixed Quiz'
+ };
+ document.getElementById('quizMenuTitle').textContent=names[type];
+ showPage('quizMenu');
+}
+
+function shuffle(array){
+ return array.sort(()=>Math.random()-.5);
+}
+
+function startQuiz(level){
+ quizLevel=level;
+ questionIndex=0;
+ quizPoints=0;
+ quizAnswered=false;
+
+ let source=shuffle([...kana]);
+
+ if(level===1) source=source.slice(0,10);
+ else if(level===2) source=source.slice(0,20);
+
+ if(currentQuizType==='all'){
+  quizQuestions=source.slice(0,10).map((item,i)=>({
+   item:item,
+   type:['read','write','speak'][i%3]
+  }));
+ }else{
+  quizQuestions=source.slice(0,10).map(item=>({
+   item:item,
+   type:currentQuizType
+  }));
+ }
+
+ showPage('quiz');
+ renderQuestion();
+}
+
+function renderQuestion(){
+ const q=quizQuestions[questionIndex];
+ const item=q.item;
+ quizAnswered=false;
+
+ document.getElementById('quizTitle').textContent=
+ q.type==='read'?'Reading Quiz':
+ q.type==='write'?'Writing Quiz':
+ q.type==='speak'?'Speaking Quiz':'Mixed Quiz';
+
+ document.getElementById('questionNumber').textContent=
+ 'Question '+(questionIndex+1)+' / '+quizQuestions.length;
+
+ document.getElementById('quizProgress').style.width=
+ (questionIndex/quizQuestions.length*100)+'%';
+
+ document.getElementById('quizScore').textContent=quizPoints+' points';
+ document.getElementById('quizKana').textContent='';
+ document.getElementById('quizFeedback').classList.add('quiz-hidden');
+ document.getElementById('nextQuestion').classList.add('quiz-hidden');
+ document.getElementById('finishQuiz').classList.add('quiz-hidden');
+
+ const prompt=document.getElementById('quizPrompt');
+ const area=document.getElementById('quizAnswerArea');
+ area.innerHTML='';
+
+ if(q.type==='read'){
+  prompt.textContent='ما نطق هذا الحرف؟';
+  document.getElementById('quizKana').textContent=item[0];
+
+  const choices=shuffle([
+   item[1],
+   ...shuffle(kana.filter(k=>k[1]!==item[1])).slice(0,3).map(k=>k[1])
+  ]);
+
+  const options=document.createElement('div');
+  options.className='quiz-options';
+
+  choices.forEach(choice=>{
+   const btn=document.createElement('button');
+   btn.textContent=choice;
+   btn.onclick=()=>checkAnswer(choice,item[1],btn,options);
+   options.appendChild(btn);
+  });
+  area.appendChild(options);
+ }
+
+ if(q.type==='write'){
+  prompt.textContent='اكتبي الحرف الياباني الذي ينطق هكذا:';
+  document.getElementById('quizKana').textContent=item[1];
+
+  const input=document.createElement('input');
+  input.id='writingAnswer';
+  input.placeholder='اكتبي الحرف هنا...';
+  input.style.textAlign='center';
+  input.style.fontSize='25px';
+
+  const btn=document.createElement('button');
+  btn.textContent='Check';
+  btn.onclick=()=>{
+   checkWriting(input.value.trim(),item[0]);
+  };
+
+  area.append(input,btn);
+ }
+
+ if(q.type==='speak'){
+  prompt.textContent='انطقي هذا الحرف باليابانية باستخدام المايك.';
+  document.getElementById('quizKana').textContent=item[0];
+
+  const btn=document.createElement('button');
+  btn.textContent='🎤 Start Microphone';
+  btn.onclick=()=>startSpeakingTest(item[0]);
+  area.appendChild(btn);
+
+  const tip=document.createElement('p');
+  tip.className='note';
+  tip.textContent='سيحاول المتصفح التعرّف على نطقك باللغة اليابانية.';
+  area.appendChild(tip);
+
+  const listen=document.createElement('button');
+  listen.textContent='Listen to the letter';
+  listen.onclick=()=>speakJapanese(item[0]);
+  area.appendChild(listen);
+ }
+}
+
+function checkAnswer(answer,correct,button,container){
+ if(quizAnswered)return;
+ quizAnswered=true;
+
+ const buttons=container.querySelectorAll('button');
+ buttons.forEach(b=>{
+  b.disabled=true;
+  if(b.textContent===correct)b.classList.add('correct');
+ });
+
+ if(answer===correct){
+  quizPoints+=10;
+  showFeedback('صحيح! أحسنتِ. '+correct+' هو النطق الصحيح.');
+ }else{
+  button.classList.add('wrong');
+  showFeedback('ليست الإجابة الصحيحة. الإجابة هي '+correct+'.');
+ }
+ updateQuizScore();
+}
+
+function checkWriting(answer,correct){
+ if(quizAnswered)return;
+ quizAnswered=true;
+
+ if(answer===correct){
+  quizPoints+=10;
+  showFeedback('ممتاز! كتبتِ الحرف بصورة صحيحة.');
+ }else{
+  showFeedback('الإجابة الصحيحة هي: '+correct);
+ }
+ updateQuizScore();
+}
+
+function startSpeakingTest(target){
+ if(!('SpeechRecognition' in window)&&!('webkitSpeechRecognition' in window)){
+  showFeedback('متصفحك لا يدعم التعرف على الصوت. جرّبي Chrome.');
+  return;
+ }
+
+ if(micActive)return;
+
+ const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ recognition=new SpeechRecognition();
+ recognition.lang='ja-JP';
+ recognition.continuous=false;
+ recognition.interimResults=false;
+ recognition.maxAlternatives=3;
+ micActive=true;
+
+ showFeedback('أستمع إليكِ الآن... انطقي الحرف.');
+
+ recognition.onresult=function(event){
+  micActive=false;
+  const result=event.results[0][0].transcript.trim();
+  const normalized=result.replace(/[。、！？\s]/g,'');
+
+  const accepted=normalized.includes(target);
+
+  if(accepted){
+   quizAnswered=true;
+   quizPoints+=10;
+   showFeedback('تم التعرف على إجابتك: '+result+'\nأحسنتِ!');
+   updateQuizScore();
+  }else{
+   showFeedback('المتصفح سمع: '+result+'\nالحرف المطلوب: '+target+'\nيمكنك المحاولة مرة أخرى.');
+  }
+ };
+
+ recognition.onerror=function(event){
+  micActive=false;
+  showFeedback('لم يعمل المايك: '+event.error+'\nتأكدي من السماح باستخدام الميكروفون.');
+ };
+
+ recognition.onend=function(){
+  micActive=false;
+ };
+
+ try{
+  recognition.start();
+ }catch(e){
+  micActive=false;
+  showFeedback('تعذر تشغيل المايك. حاولي مرة أخرى.');
+ }
+}
+
+function showFeedback(text){
+ const feedback=document.getElementById('quizFeedback');
+ feedback.textContent=text;
+ feedback.classList.remove('quiz-hidden');
+
+ if(quizAnswered){
+  if(questionIndex===quizQuestions.length-1){
+   document.getElementById('finishQuiz').classList.remove('quiz-hidden');
+  }else{
+   document.getElementById('nextQuestion').classList.remove('quiz-hidden');
+  }
+ }
+}
+
+function updateQuizScore(){
+ document.getElementById('quizScore').textContent=quizPoints+' points';
+}
+
+function nextQuestion(){
+ questionIndex++;
+ renderQuestion();
+}
+
+function finishQuiz(){
+ const total=quizQuestions.length*10;
+ const percent=Math.round(quizPoints/total*100);
+
+ document.getElementById('finalScore').textContent=
+ quizPoints+' / '+total;
+
+ document.getElementById('finalDetails').textContent=
+ 'Your result: '+percent+'%';
+
+ document.getElementById('finalMessage').textContent=
+ percent>=90?'رائعة! أداء ممتاز!':
+ percent>=70?'أحسنتِ! استمري في التدريب.':
+ percent>=50?'جيد، لكن تحتاجين إلى مزيد من التدريب.':
+ 'لا بأس! المحاولة القادمة ستكون أفضل.';
+
+ showPage('quizResult');
+}
+
+/* AI SENSEI */
+
+function addMessage(text,type){
+ const box=document.getElementById('chatBox');
+ const msg=document.createElement('div');
+ msg.className='message '+type;
+ msg.textContent=text;
+ box.appendChild(msg);
+ box.scrollTop=box.scrollHeight;
+}
+
+function sendMessage(){
+ const input=document.getElementById('chatInput');
+ const message=input.value.trim();
+ if(!message)return;
+
+ addMessage(message,'user-message');
+ input.value='';
+
+ setTimeout(()=>{
+  addMessage(getReply(message),'ai-message');
+ },250);
+}
+
+function quickAsk(message){
+ document.getElementById('chatInput').value=message;
+ sendMessage();
+}
+
+document.getElementById('chatInput').addEventListener('keydown',function(e){
+ if(e.key==='Enter')sendMessage();
+});
+
+function getReply(message){
+ const text=message.toLowerCase();
+
+ if(text.includes('ありがとう')||text.includes('شكر'))
+  return 'ありがとう (Arigatou) تعني شكرًا. ويمكنك قول ありがとうございます (Arigatou gozaimasu) للشكر بطريقة مهذبة.';
+
+ if(text.includes('こんにちは')||text.includes('مرحبا')||text.includes('hello'))
+  return 'こんにちは! Konnichiwa تعني مرحبًا. تستخدم غالبًا خلال النهار.';
+
+ if(text.includes('صباح'))
+  return 'おはよう (Ohayou) تعني صباح الخير. والصيغة المهذبة: おはようございます.';
+
+ if(text.includes('مساء'))
+  return 'こんばんは (Konbanwa) تعني مساء الخير.';
+
+ if(text.includes('وداع'))
+  return 'さようなら (Sayounara) تعني إلى اللقاء.';
+
+ if(text.includes('الهيراغانا')||text.includes('hiragana'))
+  return 'الهيراغانا نظام كتابة ياباني. يتكون من 46 حرفًا أساسيًا. ابدئي بصف あ い う え お.';
+
+ if(text.includes('كاتاكانا')||text.includes('katakana'))
+  return 'الكاتاكانا تستخدم غالبًا في كتابة الكلمات الأجنبية. مثال: コーヒー تعني قهوة.';
+
+ if(text.includes('قطة')||text.includes('猫'))
+  return '猫 (Neko) تعني قطة.';
+
+ if(text.includes('كلب')||text.includes('犬'))
+  return '犬 (Inu) تعني كلب.';
+
+ if(text.includes('اسمي')||text.includes('name'))
+  return 'يمكنك قول: 私の名前は ... です (Watashi no namae wa ... desu). ومعناها: اسمي هو ...';
+
+ if(text.includes('قواعد')||text.includes('grammar')||text.includes('الجملة'))
+  return 'في الجملة اليابانية البسيطة يأتي الفعل غالبًا في النهاية.\nمثال: 私は学生です。\nWatashi wa gakusei desu.\nأنا طالبة.';
+
+ if(text.includes('اختبر')||text.includes('quiz'))
+  return 'يمكنك اختيار Reading أو Writing أو Speaking Quiz من الصفحة الرئيسية.';
+
+ if(text.includes('تحدث')||text.includes('conversation'))
+  return 'こんにちは! お名前は何ですか؟\nKonnichiwa! Onamae wa nan desu ka?\nمرحبًا! ما اسمك؟';
+
+ const found=words.find(w=>
+  w[0]===message.trim()||
+  w[1].toLowerCase()===text||
+  w[2]===message.trim()
+ );
+
+ if(found){
+  return found[0]+' ('+found[1]+') تعني '+found[2]+'.';
+ }
+
+ return 'まだ勉強中です! أنا مساعد تعليمي محلي. اسأليني عن التحيات أو الهيراغانا أو الكلمات أو القواعد اليابانية.';
+}
+</script>
+</body>
+</html>
